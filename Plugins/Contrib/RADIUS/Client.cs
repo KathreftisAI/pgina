@@ -126,7 +126,7 @@ namespace pGina.Plugin.RADIUS
 
                         m_logger.DebugFormat("Received authentication response: {0} for user {1}", responsePacket.code, username);
 
-                        if (responsePacket.code == Packet.Code.Access_Accept)
+                        if (responsePacket.code == Packet.Code.Access_Accept || responsePacket.code == Packet.Code.Access_Challenge || responsePacket.code == Packet.Code.Accounting_Message)
                         {
                             this.authenticated = true;
                             return true;

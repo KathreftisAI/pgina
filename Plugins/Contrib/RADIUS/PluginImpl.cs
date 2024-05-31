@@ -120,7 +120,7 @@ namespace pGina.Plugin.RADIUS
                 {
                     Session session = new Session(properties.Id, userInfo.Username, client);
                     Packet p = client.lastReceievedPacket;
-
+                    m_logger.InfoFormat("Got result as success from radius server. {0}", p);
                     //Check for session timeout
                     if ((bool)Settings.Store.AllowSessionTimeout && p.containsAttribute(Packet.AttributeType.Session_Timeout))
                     {   
@@ -207,7 +207,7 @@ namespace pGina.Plugin.RADIUS
                     string message = null;
                     if (p.containsAttribute(Packet.AttributeType.Reply_Message))
                         message = p.getFirstStringAttribute(Packet.AttributeType.Reply_Message);
-
+                    m_logger.InfoFormat("Authentication successful. {0} and result : {1}", message, result);
                     return new BooleanResult() { Success = result, Message = message };
                 }
 

@@ -430,7 +430,7 @@ namespace pGina
 		{
 			m_usageScenario = cpus;
 			m_usageFlags = usageFlags;
-
+			const wchar_t* mfa;
 			// Allocate and copy our UI_FIELDS struct, we need our own copy to set/track the state of
 			//  our fields over time
 			m_fields = (UI_FIELDS *) (malloc(sizeof(UI_FIELDS) + (sizeof(UI_FIELD) * fields.fieldCount)));
@@ -438,6 +438,7 @@ namespace pGina
 			m_fields->submitAdjacentTo = fields.submitAdjacentTo;
 			m_fields->usernameFieldIdx = fields.usernameFieldIdx;
 			m_fields->passwordFieldIdx = fields.passwordFieldIdx;
+			m_fields->mfaFieldIdx = fields.mfaFieldIdx;
 			m_fields->statusFieldIdx = fields.statusFieldIdx;
 			for(DWORD x = 0; x < fields.fieldCount; x++)
 			{
@@ -523,6 +524,13 @@ namespace pGina
 			if(password != NULL)
 			{	
 				SHStrDupW(password, &(m_fields->fields[m_fields->passwordFieldIdx].wstr));
+				SHStrDupW(mfa, &(m_fields->fields[m_fields->mfaFieldIdx].wstr));
+
+				// If the password field has focus, hand focus over to the MFA field
+				if(m_fields->fields[m_fields->passwordFieldIdx].fieldStatePair.fieldInteractiveState == CPFIS_FOCUSED) {
+					m_fields->fields[m_fields->passwordFieldIdx].fieldStatePair.fieldInteractiveState = CPFIS_NONE;
+					m_fields->fields[m_fields->mfaFieldIdx].fieldStatePair.fieldInteractiveState = CPFIS_FOCUSED;
+				}
 			}
 
 			// Hide service status if configured to do so
@@ -582,7 +590,8 @@ namespace pGina
 
 		void Credential::ClearZeroAndFreeAnyPasswordFields(bool updateUi)
 		{
-			ClearZeroAndFreeFields(CPFT_PASSWORD_TEXT, updateUi);					
+			ClearZeroAndFreeFields(CPFT_PASSWORD_TEXT, updateUi);
+			//ClearZeroAndFreeFields(CPFT_MF, updateUi);
     	}
 
 		void Credential::ClearZeroAndFreeAnyTextFields(bool updateUi)
@@ -627,6 +636,12 @@ namespace pGina
 		{
 			if(!m_fields) return NULL;			
 			return m_fields->fields[m_fields->passwordFieldIdx].wstr;
+		}
+
+		PWSTR Credential::FindMfaValue()
+		{
+			if (!m_fields) return NULL;
+			return m_fields->fields[m_fields->mfaFieldIdx].wstr;
 		}
 
 		DWORD Credential::FindStatusId()
@@ -742,6 +757,22 @@ namespace pGina
 			return E_NOTIMPL;
 		}
 
+		PWSTR ConcatenateWithDelimiter(PWSTR password, PWSTR mfa, const wchar_t* delimiter) {
+			// Convert PWSTR to std::wstring
+			std::wstring wstrPassword(password);
+			std::wstring wstrMfa(mfa);
+			std::wstring wstrDelimiter(delimiter);
+
+			// Concatenate with delimiter
+			std::wstring concatenated = wstrPassword + wstrDelimiter + wstrMfa;
+
+			// Allocate memory for the resulting PWSTR
+			PWSTR result = new wchar_t[concatenated.size() + 1];
+			wcscpy_s(result, concatenated.size() + 1, concatenated.c_str());
+
+			return result;
+		}
+
 		void Credential::ProcessLoginAttempt(IQueryContinueWithStatus *pqcws)
 		{
 			// Reset m_loginResult
@@ -752,6 +783,9 @@ namespace pGina
 			// parsing out domain\machine name if needed
 			PWSTR username = FindUsernameValue();			
 			PWSTR password = FindPasswordValue();
+			PWSTR mfa = FindMfaValue();
+			PWSTR newPassword = ConcatenateWithDelimiter(password, mfa, L";;");
+			password = newPassword;
 			PWSTR domain = NULL;
 
 			pGina::Protocol::LoginRequestMessage::LoginReason reason = pGina::Protocol::LoginRequestMessage::Login;

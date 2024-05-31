@@ -44,6 +44,7 @@ namespace pGina
 			CPUIFI_SUBMIT          = 6, 
 			CPUIFI_STATUS		  = 7,
 			CPUIFI_NUM_FIELDS      = 8, 
+			CPUIFI_MFA             = 9,
 		};
 
 		static const UI_FIELDS s_changePasswordFields =
@@ -52,6 +53,7 @@ namespace pGina
 			CPUIFI_CONFIRM_NEW_PASSWORD, // Field index which submit button should be adjacent to
 			CPUIFI_USERNAME,             // Username field index value
 			CPUIFI_OLD_PASSWORD,         // Password field index value
+			CPUIFI_MFA,		// MFA field index value
 			CPUIFI_STATUS,               // Status field
 			{
 				//  when to display,               style,             field id,        type,               name           data source     value			callback
