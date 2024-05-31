@@ -126,6 +126,12 @@ namespace pGina.Plugin.RADIUS
 
                         m_logger.DebugFormat("Received authentication response: {0} for user {1}", responsePacket.code, username);
 
+                        if (responsePacket.code == Packet.Code.Access_Challenge)
+                        {
+                            m_logger.DebugFormat("Authentication attempt {0}/{1} using {2} failed. Reason: Invalid username or password.", retryCt + 1, maxRetries + 1, server);
+                        }
+
+
                         if (responsePacket.code == Packet.Code.Access_Accept)
                         {
                             this.authenticated = true;

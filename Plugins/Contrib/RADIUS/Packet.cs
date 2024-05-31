@@ -334,7 +334,10 @@ namespace pGina.Plugin.RADIUS
 
         public enum Code
         {
-            Access_Request = (byte)1, Access_Accept, Access_Reject, Accounting_Request, Accounting_Response
+            Access_Request = (byte)1, Access_Accept, Access_Reject, Accounting_Request, Accounting_Response,
+            Accounting_On, Accounting_Off, Unassigned_6, Unassigned_7, Unassigned_8, Access_Challenge,
+            Unassigned_10, Unassigned_11, Unassigned_12, Unassigned_13, Unassigned_14, Unassigned_15,
+            Unassigned_16
         };
 
         public enum AttributeType
