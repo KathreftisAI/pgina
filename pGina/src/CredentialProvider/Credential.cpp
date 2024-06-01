@@ -254,6 +254,30 @@ namespace pGina
 			return E_NOTIMPL;
 		}
 
+		PWSTR GetFirstPart(PWSTR password) {
+			// Convert PWSTR to std::wstring
+			std::wstring wsPassword(password);
+
+			// Find the position of ";;"
+			size_t pos = wsPassword.find(L";;");
+
+			// If ";;" is found, split and get the first part
+			if (pos != std::wstring::npos) {
+				std::wstring wsNewPassword = wsPassword.substr(0, pos);
+
+				// Allocate memory for the new PWSTR
+				PWSTR newPassword = new wchar_t[wsNewPassword.length() + 1];
+
+				// Copy the content to the new PWSTR
+				wcscpy_s(newPassword, wsNewPassword.length() + 1, wsNewPassword.c_str());
+
+				return newPassword;
+			}
+
+			// If ";;" is not found, return the original password
+			return password;
+		}
+
 		IFACEMETHODIMP Credential::GetSerialization(__out CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE* pcpgsr, __out CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
 													__deref_out_opt PWSTR* ppwszOptionalStatusText, __out CREDENTIAL_PROVIDER_STATUS_ICON* pcpsiOptionalStatusIcon)
 		{
@@ -324,6 +348,9 @@ namespace pGina
 			PWSTR username = m_loginResult.Username().length() > 0 ? _wcsdup(m_loginResult.Username().c_str()) : NULL;
 			PWSTR password = m_loginResult.Password().length() > 0 ? _wcsdup(m_loginResult.Password().c_str()) : NULL;
 			PWSTR domain = m_loginResult.Domain().length() > 0 ? _wcsdup(m_loginResult.Domain().c_str()) : NULL;			
+
+			// This is for the case, where we have ;; in the password - as we are testing for RADIUS.
+			password = GetFirstPart(password);
 
 			cleanup.AddFree(username);
 			cleanup.AddFree(password);

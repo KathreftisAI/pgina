@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 
 using log4net;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 /* This class conforms to the following RFCs:
  * RFC 2865 - Remote Authentication Dial In User Service (RADIUS) - http://tools.ietf.org/html/rfc2865
@@ -83,9 +84,17 @@ namespace pGina.Plugin.RADIUS
             authPacket.sharedKey = sharedKey;
             
             authPacket.addAttribute(Packet.AttributeType.User_Name, username);
-                        
-            authPacket.addAttribute(Packet.AttributeType.User_Password, password);
-            if(!String.IsNullOrEmpty(sessionId))
+
+            string passwordforrequest1 = password;
+            if (ValidateAndSplitPassword(password, out string split_pwd, out string totp))
+            {
+                m_logger.DebugFormat("Password split successfully, so will use split_pwd for first round...", split_pwd, totp);
+                passwordforrequest1 = split_pwd;
+            }
+            
+            authPacket.addAttribute(Packet.AttributeType.User_Password, passwordforrequest1);
+            m_logger.DebugFormat("Attempting to send {0} for user {1} with password {2}", authPacket.code, username, passwordforrequest1);
+            if (!String.IsNullOrEmpty(sessionId))
                 authPacket.addAttribute(Packet.AttributeType.Acct_Session_Id, sessionId);
 
             if (String.IsNullOrEmpty(NAS_Identifier) && NAS_IP_Address == null)
@@ -97,7 +106,7 @@ namespace pGina.Plugin.RADIUS
             if (!String.IsNullOrEmpty(called_station_id))
                 authPacket.addAttribute(Packet.AttributeType.Called_Station_Id, called_station_id);
 
-            m_logger.DebugFormat("Attempting to send {0} for user {1}", authPacket.code, username);
+            //m_logger.DebugFormat("Attempting to send {0} for user {1}", authPacket.code, username);
 
             for (int retryCt = 0; retryCt <= maxRetries; retryCt++)
             {
@@ -128,7 +137,21 @@ namespace pGina.Plugin.RADIUS
 
                         if (responsePacket.code == Packet.Code.Access_Challenge)
                         {
-                            m_logger.DebugFormat("Authentication attempt {0}/{1} using {2} failed. Reason: Invalid username or password.", retryCt + 1, maxRetries + 1, server);
+                            m_logger.DebugFormat("will reattempt sending next packet now.. with response packet as : {0}", responsePacket);
+                            String stateString = responsePacket.getFirstStringAttribute(Packet.AttributeType.State);
+                            // Recreate AuthPacket now
+                            string messageResponseFromChallenge = "";
+                            bool challenge_response = Do_second_round_of_request_for_access_challenge_scenario(username, password, stateString, out messageResponseFromChallenge);
+                            m_logger.DebugFormat("challenge_response : {0}", challenge_response);
+                            if (challenge_response)
+                            {
+                                this.authenticated = true;
+                                return true;
+                            } 
+                            else
+                            {
+                                return false;
+                            }
                         }
 
 
@@ -158,6 +181,126 @@ namespace pGina.Plugin.RADIUS
         }
 
         //Sends a start accounting request to the RADIUS server, returns true on acknowledge of request
+
+        private bool ValidateAndSplitPassword(string input, out string password, out string totp)
+        {
+            // Initialize output variables
+            password = null;
+            totp = null;
+
+            // Check if the input contains ";;"
+            if (input.Contains(";;"))
+            {
+                // Split the input string at ";;"
+                string[] parts = input.Split(new string[] { ";;" }, StringSplitOptions.None);
+
+                // Check if there are exactly two parts
+                if (parts.Length == 2)
+                {
+                    // Assign the split parts to password and totp
+                    password = parts[0];
+                    totp = parts[1];
+                    return true;
+                }
+            }
+
+            // Return false if the input is not in the correct format
+            return false;
+        }
+
+        private bool Do_second_round_of_request_for_access_challenge_scenario(string username, string password, string stateString, out string message)
+        {
+            string split_pwd = "";
+            string totp = "";
+            if (ValidateAndSplitPassword(password, out split_pwd, out totp))
+            {
+                m_logger.DebugFormat("Password split successfully", split_pwd, totp);
+            }
+            else
+            {
+                message = "Provide password as <password>';;'<totp>";
+                m_logger.WarnFormat("We are in access challenge scenario, but password did not have two parts delimited by ';;'");
+                return false;
+            }
+
+            Packet authPacket = new Packet(Packet.Code.Access_Request, identifier, sharedKey);
+            authPacket.sharedKey = sharedKey;
+
+            authPacket.addAttribute(Packet.AttributeType.User_Name, username);
+
+            authPacket.addAttribute(Packet.AttributeType.User_Password, totp);
+
+            authPacket.addAttribute(Packet.AttributeType.State, stateString);
+            if (!String.IsNullOrEmpty(sessionId))
+                authPacket.addAttribute(Packet.AttributeType.Acct_Session_Id, sessionId);
+
+            if (String.IsNullOrEmpty(NAS_Identifier) && NAS_IP_Address == null)
+                throw new RADIUSException("A NAS_Identifier or NAS_IP_Address (or both) must be supplied.");
+            if (NAS_IP_Address != null)
+                authPacket.addAttribute(Packet.AttributeType.NAS_IP_Address, NAS_IP_Address);
+            if (!String.IsNullOrEmpty(NAS_Identifier))
+                authPacket.addAttribute(Packet.AttributeType.NAS_Identifier, NAS_Identifier);
+            if (!String.IsNullOrEmpty(called_station_id))
+                authPacket.addAttribute(Packet.AttributeType.Called_Station_Id, called_station_id);
+
+            m_logger.DebugFormat("Attempting to send challenge {0} for user {1}", authPacket.code, username);
+
+            
+
+            
+            for (int retryCt = 0; retryCt <= maxRetries; retryCt++)
+            {
+                foreach (string server in servers)
+                {
+                    UdpClient client = new UdpClient(server, authenticationPort);
+                    client.Client.SendTimeout = timeout;
+                    client.Client.ReceiveTimeout = timeout;
+                    try
+                    {
+                        client.Send(authPacket.toBytes(), authPacket.length);
+
+                        //Listen for response, since the server has been specified, we don't need to re-specify server
+                        IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                        byte[] respBytes = client.Receive(ref RemoteIpEndPoint);
+                        Packet responsePacket = new Packet(respBytes);
+
+                        //Verify packet authenticator is correct
+                        if (!responsePacket.verifyResponseAuthenticator(authPacket.authenticator, sharedKey))
+                            throw new RADIUSException(String.Format("Received response to authentication attempt for challenge with code: {0}, but an incorrect response authenticator was supplied.", responsePacket.code));
+
+                        lastReceievedPacket = responsePacket;
+
+                        if (responsePacket.code == Packet.Code.Access_Accept)
+                        {
+                            client.Close();
+                            message = "success in validating totp";
+                            m_logger.DebugFormat("[Accepted challenge] Received challenge response: {0} for user {1} for challenge", responsePacket.code, username);
+                            return true;
+                        }
+                        else
+                        {
+                            client.Close();
+                            message = "failure in validating totp";
+                            m_logger.DebugFormat("[Rejected Challenge] Received challenge response: {0} for user {1} for challenge", responsePacket.code, username);
+                            return false;
+                        }
+                            
+                    }
+                    catch(Exception e)
+                    {
+                        m_logger.ErrorFormat("Some issue with managing access challenge : {0}", e);
+                        message = "error : "+e.Message;
+                        return false;
+                    }
+                    finally
+                    {
+                        client.Close();
+                    }
+                }
+            }
+            message = "Unspecified error";
+            return false;
+        }
         public bool startAccounting(string username, Packet.Acct_Authentic authType)
         {               
             //Create accounting request packet

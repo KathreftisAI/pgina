@@ -159,6 +159,7 @@ namespace pGina.Plugin.RADIUS
                                 }
                                 catch (FormatException e)
                                 {
+                                    m_logger.WarnFormat("Format exception : {0}", e);
                                     m_logger.DebugFormat("Unable to parse timestamp: {0}", Packet.VSA_valueAsString(val));
                                 }
                             }
