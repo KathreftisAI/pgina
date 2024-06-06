@@ -321,6 +321,7 @@ namespace pGina
 
 		IFACEMETHODIMP Provider::GetCredentialAt(__in DWORD dwIndex, __deref_out ICredentialProviderCredential** ppcpc)
 		{
+			const wchar_t* OTPValue = nullptr;
 			// Currently we have just the one, we lazy init it here when first requested
 			if(!m_credential)
 			{
@@ -337,15 +338,17 @@ namespace pGina
 
 				switch(m_usageScenario)
 				{
+
 				case CPUS_LOGON:				
 				case CPUS_CREDUI:
-					m_credential->Initialize(m_usageScenario, s_logonFields, m_usageFlags, serializedUser, serializedPass);
+					m_credential->Initialize(m_usageScenario, s_logonFields, m_usageFlags, serializedUser, serializedPass, OTPValue);
 					break;
 				case CPUS_UNLOCK_WORKSTATION:
-					m_credential->Initialize(m_usageScenario, s_unlockFields, m_usageFlags, serializedUser, serializedPass);					
+					m_credential->Initialize(m_usageScenario, s_unlockFields, m_usageFlags, serializedUser, serializedPass,OTPValue);
 					break;
+
 				case CPUS_CHANGE_PASSWORD:
-					m_credential->Initialize(m_usageScenario, s_changePasswordFields, m_usageFlags, serializedUser, serializedPass);
+					m_credential->Initialize(m_usageScenario, s_changePasswordFields, m_usageFlags, serializedUser, serializedPass, OTPValue);
 					break;
 				default:
 					return E_INVALIDARG;

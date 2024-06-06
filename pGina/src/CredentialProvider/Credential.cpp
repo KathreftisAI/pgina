@@ -453,160 +453,332 @@ namespace pGina
 			ReleaseDllReference();
 		}
 
-		void Credential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus, UI_FIELDS const& fields, DWORD usageFlags, const wchar_t *username, const wchar_t *password)
+		//void Credential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus, UI_FIELDS const& fields, DWORD usageFlags, const wchar_t *username, const wchar_t *password, const wchar_t* OTP)
+		//{
+		//	m_usageScenario = cpus;
+		//	m_usageFlags = usageFlags;
+
+		//	// Allocate and copy our UI_FIELDS struct, we need our own copy to set/track the state of
+		//	//  our fields over time
+		//	m_fields = (UI_FIELDS *) (malloc(sizeof(UI_FIELDS) + (sizeof(UI_FIELD) * fields.fieldCount)));
+		//	m_fields->fieldCount = fields.fieldCount;
+		//	m_fields->submitAdjacentTo = fields.submitAdjacentTo;
+		//	m_fields->usernameFieldIdx = fields.usernameFieldIdx;
+		//	m_fields->passwordFieldIdx = fields.passwordFieldIdx;
+		//	m_fields->statusFieldIdx = fields.statusFieldIdx;
+		//	for(DWORD x = 0; x < fields.fieldCount; x++)
+		//	{
+		//		m_fields->fields[x].fieldDescriptor = fields.fields[x].fieldDescriptor;
+		//		m_fields->fields[x].fieldStatePair = fields.fields[x].fieldStatePair;
+		//		m_fields->fields[x].fieldDataSource = fields.fields[x].fieldDataSource;
+		//		m_fields->fields[x].wstr = NULL;
+
+		//		if(fields.fields[x].wstr && !IsFieldDynamic(x))
+		//		{
+		//			SHStrDup(fields.fields[x].wstr, &m_fields->fields[x].wstr);
+		//		}
+
+		//		if(IsFieldDynamic(x))
+		//		{
+		//			std::wstring text = GetTextForField(x);
+		//			if( ! text.empty() )
+		//			{
+		//				SHStrDup( text.c_str(), &m_fields->fields[x].wstr );
+		//			}
+		//		}				
+		//	}			
+
+		//	// Fill the username field (if necessary)
+		//	if(username != NULL)
+		//	{				
+		//		SHStrDupW(username, &(m_fields->fields[m_fields->usernameFieldIdx].wstr));
+
+		//		// If the username field has focus, hand focus over to the password field
+		//		if(m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldInteractiveState == CPFIS_FOCUSED) {
+		//			m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldInteractiveState = CPFIS_NONE;
+		//			m_fields->fields[m_fields->passwordFieldIdx].fieldStatePair.fieldInteractiveState = CPFIS_FOCUSED;
+		//		}
+		//	}
+		//	else if(m_usageScenario == CPUS_UNLOCK_WORKSTATION)
+		//	{
+		//		DWORD mySession = pGina::Helpers::GetCurrentSessionId();
+		//		std::wstring sessionUname, domain;    // Username and domain to be determined
+		//		std::wstring usernameFieldValue;  // The value for the username field
+		//		std::wstring machineName = pGina::Helpers::GetMachineName();
+
+		//		// Get user information from service (if available)
+		//		pDEBUG(L"Retrieving user information from service.");
+		//		pGina::Transactions::LoginInfo::UserInformation userInfo = 
+		//			pGina::Transactions::LoginInfo::GetUserInformation(mySession);
+		//		pDEBUG(L"Received: original uname: '%s' uname: '%s' domain: '%s'", 
+		//			userInfo.OriginalUsername().c_str(), userInfo.Username().c_str(), userInfo.Domain().c_str());
+
+		//		// Grab the domain if available
+		//		if( ! userInfo.Domain().empty() )
+		//			domain = userInfo.Domain();
+
+		//		// Are we configured to use the original username?
+		//		if( pGina::Registry::GetBool(L"UseOriginalUsernameInUnlockScenario", false) )
+		//			sessionUname = userInfo.OriginalUsername();
+		//		else
+		//			sessionUname = userInfo.Username();
+
+		//		// If we didn't get a username/domain from the service, try to get it from WTS
+		//		if( sessionUname.empty() )
+		//			sessionUname = pGina::Helpers::GetSessionUsername(mySession);
+		//		if( domain.empty() )
+		//			domain = pGina::Helpers::GetSessionDomainName(mySession);
+		//			
+
+		//		if(!domain.empty() && _wcsicmp(domain.c_str(), machineName.c_str()) != 0)
+		//		{
+		//			usernameFieldValue += domain;
+		//			usernameFieldValue += L"\\";
+		//		}
+
+		//		usernameFieldValue += sessionUname;
+		//		
+		//		SHStrDupW(usernameFieldValue.c_str(), &(m_fields->fields[m_fields->usernameFieldIdx].wstr));
+		//	} else if( CPUS_CHANGE_PASSWORD == m_usageScenario ) {
+		//		DWORD mySession = pGina::Helpers::GetCurrentSessionId();
+
+		//		std::wstring sessionUname = pGina::Helpers::GetSessionUsername(mySession);
+
+		//		SHStrDupW(sessionUname.c_str(), &(m_fields->fields[m_fields->usernameFieldIdx].wstr));
+		//	}
+
+		//	if(password != NULL)
+		//	{	
+		//		SHStrDupW(password, &(m_fields->fields[m_fields->passwordFieldIdx].wstr));
+		//	}
+
+		//	// Hide service status if configured to do so
+		//	if( ! pGina::Registry::GetBool(L"ShowServiceStatusInLogonUi", true) )
+		//	{
+		//		m_fields->fields[m_fields->statusFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+		//	}
+
+		//	// If the service is not available, we initially hide username/password
+		//	if (!pGina::Transactions::Service::Ping()) 
+		//	{
+		//		m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+		//		m_fields->fields[m_fields->passwordFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+		//		
+		//		// In change password scenario, also hide new password and repeat new password fields
+		//		if (CPUS_CHANGE_PASSWORD == m_usageScenario) {
+		//			m_fields->fields[CredProv::CPUIFI_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
+		//			m_fields->fields[CredProv::CPUIFI_CONFIRM_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
+		//		}
+		//	}
+		//	else // If the service is available, we don't show the status message.
+		//	{
+		//		m_fields->fields[m_fields->statusFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+		//	}
+
+		//	// If the user has requested to hide the username and/or password fields.
+		//	bool hideUsername = pGina::Registry::GetBool(L"HideUsernameField", false);
+		//	bool hidePassword = pGina::Registry::GetBool(L"HidePasswordField", false);
+		//	if (hideUsername)
+		//		m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+		//	if (hidePassword) {
+		//		m_fields->fields[m_fields->passwordFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+		//		if (m_usageScenario == CPUS_CHANGE_PASSWORD) {
+		//			m_fields->fields[CredProv::CPUIFI_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
+		//			m_fields->fields[CredProv::CPUIFI_CONFIRM_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
+		//		}
+
+		//		// Since we're hiding the password field, we need to put the submit button
+		//		// somewhere.  Here we figure out where to put it.  If the username field is 
+		//		// available, we can put it there, otherwise, we put it somewhere else.
+		//		if (hideUsername) {
+		//			if (m_usageScenario == CPUS_LOGON || m_usageScenario == CPUS_CREDUI || m_usageScenario == CPUS_CHANGE_PASSWORD) {
+		//				// Put the submit button next to the MOTD
+		//				m_fields->submitAdjacentTo = 1;   // MOTD
+		//			}
+		//			else if (m_usageScenario == CPUS_UNLOCK_WORKSTATION) {
+		//				// In the Unlock scenario, we just put it next to the "locked" label.
+		//				m_fields->submitAdjacentTo = CredProv::LOIFI_LOCKED;
+		//			}
+		//		}
+		//		else {
+		//			// The username field is available, so we put the submit button here.
+		//			m_fields->submitAdjacentTo = m_fields->usernameFieldIdx;
+		//		}
+		//	}
+		//}
+void Credential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus, UI_FIELDS const& fields, DWORD usageFlags, const wchar_t* username, const wchar_t* password, const wchar_t* OTP)
+{
+	
+	m_usageScenario = cpus;
+	m_usageFlags = usageFlags;
+
+	// Allocate and copy our UI_FIELDS struct, we need our own copy to set/track the state of
+	// our fields over time
+	m_fields = (UI_FIELDS*)(malloc(sizeof(UI_FIELDS) + (sizeof(UI_FIELD) * fields.fieldCount)));
+	m_fields->fieldCount = fields.fieldCount;
+	m_fields->submitAdjacentTo = fields.submitAdjacentTo;
+	m_fields->usernameFieldIdx = fields.usernameFieldIdx;
+	m_fields->passwordFieldIdx = fields.passwordFieldIdx;
+	m_fields->statusFieldIdx = fields.statusFieldIdx;
+	m_fields->OTPFieldIdx = fields.OTPFieldIdx;  
+	for (DWORD x = 0; x < fields.fieldCount; x++)
+	{
+		m_fields->fields[x].fieldDescriptor = fields.fields[x].fieldDescriptor;
+		m_fields->fields[x].fieldStatePair = fields.fields[x].fieldStatePair;
+		m_fields->fields[x].fieldDataSource = fields.fields[x].fieldDataSource;
+		m_fields->fields[x].wstr = NULL;
+
+		if (fields.fields[x].wstr && !IsFieldDynamic(x))
 		{
-			m_usageScenario = cpus;
-			m_usageFlags = usageFlags;
-
-			// Allocate and copy our UI_FIELDS struct, we need our own copy to set/track the state of
-			//  our fields over time
-			m_fields = (UI_FIELDS *) (malloc(sizeof(UI_FIELDS) + (sizeof(UI_FIELD) * fields.fieldCount)));
-			m_fields->fieldCount = fields.fieldCount;
-			m_fields->submitAdjacentTo = fields.submitAdjacentTo;
-			m_fields->usernameFieldIdx = fields.usernameFieldIdx;
-			m_fields->passwordFieldIdx = fields.passwordFieldIdx;
-			m_fields->statusFieldIdx = fields.statusFieldIdx;
-			for(DWORD x = 0; x < fields.fieldCount; x++)
-			{
-				m_fields->fields[x].fieldDescriptor = fields.fields[x].fieldDescriptor;
-				m_fields->fields[x].fieldStatePair = fields.fields[x].fieldStatePair;
-				m_fields->fields[x].fieldDataSource = fields.fields[x].fieldDataSource;
-				m_fields->fields[x].wstr = NULL;
-
-				if(fields.fields[x].wstr && !IsFieldDynamic(x))
-				{
-					SHStrDup(fields.fields[x].wstr, &m_fields->fields[x].wstr);
-				}
-
-				if(IsFieldDynamic(x))
-				{
-					std::wstring text = GetTextForField(x);
-					if( ! text.empty() )
-					{
-						SHStrDup( text.c_str(), &m_fields->fields[x].wstr );
-					}
-				}				
-			}			
-
-			// Fill the username field (if necessary)
-			if(username != NULL)
-			{				
-				SHStrDupW(username, &(m_fields->fields[m_fields->usernameFieldIdx].wstr));
-
-				// If the username field has focus, hand focus over to the password field
-				if(m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldInteractiveState == CPFIS_FOCUSED) {
-					m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldInteractiveState = CPFIS_NONE;
-					m_fields->fields[m_fields->passwordFieldIdx].fieldStatePair.fieldInteractiveState = CPFIS_FOCUSED;
-				}
-			}
-			else if(m_usageScenario == CPUS_UNLOCK_WORKSTATION)
-			{
-				DWORD mySession = pGina::Helpers::GetCurrentSessionId();
-				std::wstring sessionUname, domain;    // Username and domain to be determined
-				std::wstring usernameFieldValue;  // The value for the username field
-				std::wstring machineName = pGina::Helpers::GetMachineName();
-
-				// Get user information from service (if available)
-				pDEBUG(L"Retrieving user information from service.");
-				pGina::Transactions::LoginInfo::UserInformation userInfo = 
-					pGina::Transactions::LoginInfo::GetUserInformation(mySession);
-				pDEBUG(L"Received: original uname: '%s' uname: '%s' domain: '%s'", 
-					userInfo.OriginalUsername().c_str(), userInfo.Username().c_str(), userInfo.Domain().c_str());
-
-				// Grab the domain if available
-				if( ! userInfo.Domain().empty() )
-					domain = userInfo.Domain();
-
-				// Are we configured to use the original username?
-				if( pGina::Registry::GetBool(L"UseOriginalUsernameInUnlockScenario", false) )
-					sessionUname = userInfo.OriginalUsername();
-				else
-					sessionUname = userInfo.Username();
-
-				// If we didn't get a username/domain from the service, try to get it from WTS
-				if( sessionUname.empty() )
-					sessionUname = pGina::Helpers::GetSessionUsername(mySession);
-				if( domain.empty() )
-					domain = pGina::Helpers::GetSessionDomainName(mySession);
-					
-
-				if(!domain.empty() && _wcsicmp(domain.c_str(), machineName.c_str()) != 0)
-				{
-					usernameFieldValue += domain;
-					usernameFieldValue += L"\\";
-				}
-
-				usernameFieldValue += sessionUname;
-				
-				SHStrDupW(usernameFieldValue.c_str(), &(m_fields->fields[m_fields->usernameFieldIdx].wstr));
-			} else if( CPUS_CHANGE_PASSWORD == m_usageScenario ) {
-				DWORD mySession = pGina::Helpers::GetCurrentSessionId();
-
-				std::wstring sessionUname = pGina::Helpers::GetSessionUsername(mySession);
-
-				SHStrDupW(sessionUname.c_str(), &(m_fields->fields[m_fields->usernameFieldIdx].wstr));
-			}
-
-			if(password != NULL)
-			{	
-				SHStrDupW(password, &(m_fields->fields[m_fields->passwordFieldIdx].wstr));
-			}
-
-			// Hide service status if configured to do so
-			if( ! pGina::Registry::GetBool(L"ShowServiceStatusInLogonUi", true) )
-			{
-				m_fields->fields[m_fields->statusFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
-			}
-
-			// If the service is not available, we initially hide username/password
-			if (!pGina::Transactions::Service::Ping()) 
-			{
-				m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
-				m_fields->fields[m_fields->passwordFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
-				
-				// In change password scenario, also hide new password and repeat new password fields
-				if (CPUS_CHANGE_PASSWORD == m_usageScenario) {
-					m_fields->fields[CredProv::CPUIFI_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
-					m_fields->fields[CredProv::CPUIFI_CONFIRM_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
-				}
-			}
-			else // If the service is available, we don't show the status message.
-			{
-				m_fields->fields[m_fields->statusFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
-			}
-
-			// If the user has requested to hide the username and/or password fields.
-			bool hideUsername = pGina::Registry::GetBool(L"HideUsernameField", false);
-			bool hidePassword = pGina::Registry::GetBool(L"HidePasswordField", false);
-			if (hideUsername)
-				m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
-			if (hidePassword) {
-				m_fields->fields[m_fields->passwordFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
-				if (m_usageScenario == CPUS_CHANGE_PASSWORD) {
-					m_fields->fields[CredProv::CPUIFI_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
-					m_fields->fields[CredProv::CPUIFI_CONFIRM_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
-				}
-
-				// Since we're hiding the password field, we need to put the submit button
-				// somewhere.  Here we figure out where to put it.  If the username field is 
-				// available, we can put it there, otherwise, we put it somewhere else.
-				if (hideUsername) {
-					if (m_usageScenario == CPUS_LOGON || m_usageScenario == CPUS_CREDUI || m_usageScenario == CPUS_CHANGE_PASSWORD) {
-						// Put the submit button next to the MOTD
-						m_fields->submitAdjacentTo = 1;   // MOTD
-					}
-					else if (m_usageScenario == CPUS_UNLOCK_WORKSTATION) {
-						// In the Unlock scenario, we just put it next to the "locked" label.
-						m_fields->submitAdjacentTo = CredProv::LOIFI_LOCKED;
-					}
-				}
-				else {
-					// The username field is available, so we put the submit button here.
-					m_fields->submitAdjacentTo = m_fields->usernameFieldIdx;
-				}
-			}
+			SHStrDup(fields.fields[x].wstr, &m_fields->fields[x].wstr);
 		}
 
+		if (IsFieldDynamic(x))
+		{
+			std::wstring text = GetTextForField(x);
+			if (!text.empty())
+			{
+				SHStrDup(text.c_str(), &m_fields->fields[x].wstr);
+			}
+		}
+	}
+
+	// Fill the username field (if necessary)
+	if (username != NULL)
+	{
+		SHStrDupW(username, &(m_fields->fields[m_fields->usernameFieldIdx].wstr));
+
+		// If the username field has focus, hand focus over to the password field
+		if (m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldInteractiveState == CPFIS_FOCUSED) {
+			m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldInteractiveState = CPFIS_NONE;
+			m_fields->fields[m_fields->passwordFieldIdx].fieldStatePair.fieldInteractiveState = CPFIS_FOCUSED;
+		}
+	}
+	else if (m_usageScenario == CPUS_UNLOCK_WORKSTATION)
+	{
+		DWORD mySession = pGina::Helpers::GetCurrentSessionId();
+		std::wstring sessionUname, domain;    // Username and domain to be determined
+		std::wstring usernameFieldValue;  // The value for the username field
+		std::wstring machineName = pGina::Helpers::GetMachineName();
+
+		// Get user information from service (if available)
+		pDEBUG(L"Retrieving user information from service.");
+		pGina::Transactions::LoginInfo::UserInformation userInfo =
+			pGina::Transactions::LoginInfo::GetUserInformation(mySession);
+		pDEBUG(L"Received: original uname: '%s' uname: '%s' domain: '%s'",
+			userInfo.OriginalUsername().c_str(), userInfo.Username().c_str(), userInfo.Domain().c_str());
+
+		// Grab the domain if available
+		if (!userInfo.Domain().empty())
+			domain = userInfo.Domain();
+
+		// Are we configured to use the original username?
+		if (pGina::Registry::GetBool(L"UseOriginalUsernameInUnlockScenario", false))
+			sessionUname = userInfo.OriginalUsername();
+		else
+			sessionUname = userInfo.Username();
+
+		// If we didn't get a username/domain from the service, try to get it from WTS
+		if (sessionUname.empty())
+			sessionUname = pGina::Helpers::GetSessionUsername(mySession);
+		if (domain.empty())
+			domain = pGina::Helpers::GetSessionDomainName(mySession);
+
+
+		if (!domain.empty() && _wcsicmp(domain.c_str(), machineName.c_str()) != 0)
+		{
+			usernameFieldValue += domain;
+			usernameFieldValue += L"\\";
+		}
+
+		usernameFieldValue += sessionUname;
+
+		SHStrDupW(usernameFieldValue.c_str(), &(m_fields->fields[m_fields->usernameFieldIdx].wstr));
+	}
+	else if (CPUS_CHANGE_PASSWORD == m_usageScenario) {
+		DWORD mySession = pGina::Helpers::GetCurrentSessionId();
+
+		std::wstring sessionUname = pGina::Helpers::GetSessionUsername(mySession);
+
+		SHStrDupW(sessionUname.c_str(), &(m_fields->fields[m_fields->usernameFieldIdx].wstr));
+	}
+
+	// Fill the password field (if necessary)
+	if (password != NULL)
+	{
+		SHStrDupW(password, &(m_fields->fields[m_fields->passwordFieldIdx].wstr));
+	}
+
+	// Fill the OTP field (if necessary)
+	if (OTP != NULL)
+	{
+		SHStrDupW(OTP, &(m_fields->fields[m_fields->OTPFieldIdx].wstr));
+	}
+
+	// Hide service status if configured to do so
+	if (!pGina::Registry::GetBool(L"ShowServiceStatusInLogonUi", true))
+	{
+		m_fields->fields[m_fields->statusFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+	}
+
+	// If the service is not available, we initially hide username/password/OTP
+	if (!pGina::Transactions::Service::Ping())
+	{
+		m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+		m_fields->fields[m_fields->passwordFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+		m_fields->fields[m_fields->OTPFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+
+		// In change password scenario, also hide new password and repeat new password fields
+		if (CPUS_CHANGE_PASSWORD == m_usageScenario) {
+			m_fields->fields[CredProv::CPUIFI_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
+			m_fields->fields[CredProv::CPUIFI_CONFIRM_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
+		}
+	}
+	else // If the service is available, we don't show the status message.
+	{
+		m_fields->fields[m_fields->statusFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+	}
+
+	// If the user has requested to hide the username and/or password fields.
+	bool hideUsername = pGina::Registry::GetBool(L"HideUsernameField", false);
+	bool hidePassword = pGina::Registry::GetBool(L"HidePasswordField", false);
+	bool hideOTP = pGina::Registry::GetBool(L"HideOTPField", false); // Assuming a similar registry setting for OTP
+	if (hideUsername)
+		m_fields->fields[m_fields->usernameFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+	if (hidePassword) {
+		m_fields->fields[m_fields->passwordFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+		if (m_usageScenario == CPUS_CHANGE_PASSWORD) {
+			m_fields->fields[CredProv::CPUIFI_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
+			m_fields->fields[CredProv::CPUIFI_CONFIRM_NEW_PASSWORD].fieldStatePair.fieldState = CPFS_HIDDEN;
+		}
+
+		// Since we're hiding the password field, we need to put the submit button
+		// somewhere.  Here we figure out where to put it.  If the username field is 
+		// available, we can put it there, otherwise, we put it somewhere else.
+		if (hideUsername) {
+			if (m_usageScenario == CPUS_LOGON || m_usageScenario == CPUS_CREDUI || m_usageScenario == CPUS_CHANGE_PASSWORD) {
+				// Put the submit button next to the MOTD
+				m_fields->submitAdjacentTo = 1;   // MOTD
+			}
+			else if (m_usageScenario == CPUS_UNLOCK_WORKSTATION) {
+				// In the Unlock scenario, we just put it next to the "locked" label.
+				m_fields->submitAdjacentTo = CredProv::LOIFI_LOCKED;
+			}
+		}
+		else {
+			// The username field is available, so we put the submit button here.
+			m_fields->submitAdjacentTo = m_fields->usernameFieldIdx;
+		}
+	}
+	if (hideOTP)
+		m_fields->fields[m_fields->OTPFieldIdx].fieldStatePair.fieldState = CPFS_HIDDEN;
+}
+
+const wchar_t* GetOTP()
+{
+	// For now, return a constant OTP
+	return L"123456";
+}
 		void Credential::ClearZeroAndFreeAnyPasswordFields(bool updateUi)
 		{
 			ClearZeroAndFreeFields(CPFT_PASSWORD_TEXT, updateUi);					

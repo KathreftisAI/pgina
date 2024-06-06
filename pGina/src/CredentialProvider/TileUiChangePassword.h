@@ -43,7 +43,8 @@ namespace pGina
 			CPUIFI_CONFIRM_NEW_PASSWORD = 5,
 			CPUIFI_SUBMIT          = 6, 
 			CPUIFI_STATUS		  = 7,
-			CPUIFI_NUM_FIELDS      = 8, 
+			CPUIFI_OTP		  = 8,
+			CPUIFI_NUM_FIELDS      = 9, 
 		};
 
 		static const UI_FIELDS s_changePasswordFields =
@@ -52,6 +53,7 @@ namespace pGina
 			CPUIFI_CONFIRM_NEW_PASSWORD, // Field index which submit button should be adjacent to
 			CPUIFI_USERNAME,             // Username field index value
 			CPUIFI_OLD_PASSWORD,         // Password field index value
+			CPUIFI_OTP,         // OTP field index value
 			CPUIFI_STATUS,               // Status field
 			{
 				//  when to display,               style,             field id,        type,               name           data source     value			callback
@@ -61,6 +63,7 @@ namespace pGina
 				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },	{ CPUIFI_OLD_PASSWORD,  CPFT_PASSWORD_TEXT, L"Old Password" }, SOURCE_NONE,    NULL,			NULL }, 
 				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },	{ CPUIFI_NEW_PASSWORD,  CPFT_PASSWORD_TEXT, L"New Password" }, SOURCE_NONE,    NULL,			NULL }, 
 				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },	{ CPUIFI_CONFIRM_NEW_PASSWORD,  CPFT_PASSWORD_TEXT, L"Confirm New Password" }, SOURCE_NONE,    NULL,			NULL }, 
+				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },	{ CPUIFI_OTP,  CPFT_EDIT_TEXT,  L"Enter OTP" },          SOURCE_NONE,    NULL,			NULL },
 				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },    { CPUIFI_SUBMIT,    CPFT_SUBMIT_BUTTON, L"Submit" },   SOURCE_NONE,    NULL,			NULL }, 
 				{ { CPFS_DISPLAY_IN_BOTH,		   CPFIS_NONE },    { CPUIFI_STATUS,    CPFT_SMALL_TEXT,    L"Status" },   SOURCE_STATUS,  L"Status",    NULL },
 			}

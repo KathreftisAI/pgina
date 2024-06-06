@@ -41,6 +41,7 @@ namespace pGina
 		class Credential : public IConnectableCredentialProviderCredential
 		{
 		public:
+			const wchar_t* GetOTP();
 			// IUnknown
 			IFACEMETHODIMP_(ULONG) AddRef();    
 			IFACEMETHODIMP_(ULONG) Release();    
@@ -75,7 +76,7 @@ namespace pGina
 			virtual ~Credential();
 
 			void	Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus, UI_FIELDS const& fields, 
-							   DWORD usageFlags, const wchar_t *username, const wchar_t *password);
+							   DWORD usageFlags, const wchar_t *username, const wchar_t *password, const wchar_t* OTP);
 
 			virtual void	ServiceStateChanged(bool newState);
 
