@@ -351,7 +351,7 @@ namespace pGina
 
 			// This is for the case, where we have ;; in the password - as we are testing for RADIUS.
 			password = GetFirstPart(password);
-
+			pDEBUG(L"GetFirstPart; Setting password: %s", password);
 			cleanup.AddFree(username);
 			cleanup.AddFree(password);
 			cleanup.AddFree(domain);
