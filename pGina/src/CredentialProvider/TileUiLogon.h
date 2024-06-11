@@ -41,24 +41,28 @@ namespace pGina
 			LUIFI_PASSWORD        = 3,
 			LUIFI_SUBMIT          = 4, 
 			LUIFI_STATUS		  = 5,
-			LUIFI_NUM_FIELDS      = 6, 
+			LUIFI_OTP             = 6,
+			LUIFI_NUM_FIELDS      = 7, 
 		};
 
 		static const UI_FIELDS s_logonFields =
 		{
 			LUIFI_NUM_FIELDS,		// Number of fields total
-			LUIFI_PASSWORD,			// Field index which submit button should be adjacent to
+			LUIFI_OTP,			// Field index which submit button should be adjacent to
 			LUIFI_USERNAME,			// Username field index value
 			LUIFI_PASSWORD,			// Password field index value
 			LUIFI_STATUS,			// Status field
+			LUIFI_OTP,				// OTP field
 			{
 				//  when to display,               style,             field id,        type,               name           data source     value			callback
 				{ { CPFS_DISPLAY_IN_BOTH,          CPFIS_NONE },    { LUIFI_TILEIMAGE, CPFT_TILE_IMAGE,    L"Image" },    SOURCE_NONE,    NULL,			NULL },	
 			    { { CPFS_DISPLAY_IN_BOTH,          CPFIS_NONE },    { LUIFI_MOTD,      CPFT_SMALL_TEXT,    L"MOTD" },     SOURCE_DYNAMIC, L"pGina",     NULL }, 
 				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_FOCUSED }, { LUIFI_USERNAME,  CPFT_EDIT_TEXT,     L"Username" }, SOURCE_NONE,    NULL,			NULL },	
-				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },	{ LUIFI_PASSWORD,  CPFT_PASSWORD_TEXT, L"Password" }, SOURCE_NONE,    NULL,			NULL }, 
+				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },	{ LUIFI_PASSWORD,  CPFT_PASSWORD_TEXT, L"Password" }, SOURCE_NONE,    NULL,			NULL },
 				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },    { LUIFI_SUBMIT,    CPFT_SUBMIT_BUTTON, L"Submit" },   SOURCE_NONE,    NULL,			NULL }, 
 				{ { CPFS_DISPLAY_IN_BOTH,		   CPFIS_NONE },    { LUIFI_STATUS,    CPFT_SMALL_TEXT,    L"Status" },   SOURCE_STATUS,  L"Status",    NULL },
+				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },    { LUIFI_OTP,    CPFT_PASSWORD_TEXT,    L"Otp" },   SOURCE_NONE,  NULL,    NULL },
+
 			}
 		};
 	}

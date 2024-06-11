@@ -80,6 +80,7 @@ namespace pGina
 			DWORD usernameFieldIdx;
 			DWORD passwordFieldIdx;
 			DWORD statusFieldIdx;
+			DWORD otpFieldIdx;
 			UI_FIELD fields[];	// Note: Warning 4200 - compiler cannot generate copy ctor, no doing UI_FIELDS x = UI_FIELDS y!
 		};
 	}

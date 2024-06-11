@@ -243,7 +243,7 @@ namespace pGina.Plugin.RADIUS
             if (!String.IsNullOrEmpty(called_station_id))
                 authPacket.addAttribute(Packet.AttributeType.Called_Station_Id, called_station_id);
 
-            m_logger.DebugFormat("Attempting to send challenge {0} for user {1}", authPacket.code, username);
+            m_logger.DebugFormat("Attempting to send challenge {0} for user {1} for totp {2}", authPacket.code, username, totp);
 
             
 

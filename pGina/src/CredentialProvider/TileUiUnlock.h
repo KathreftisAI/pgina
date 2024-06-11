@@ -41,15 +41,17 @@ namespace pGina
 			LOIFI_PASSWORD        = 3,
 			LOIFI_SUBMIT          = 4, 
 			LOIFI_STATUS		  = 5,
-			LOIFI_NUM_FIELDS      = 6,  
+			LOIFI_OTP             = 6,
+			LOIFI_NUM_FIELDS      = 7,  
 		};
 
 		static const UI_FIELDS s_unlockFields =
 		{
 			LOIFI_NUM_FIELDS,		// Number of fields total
-			LOIFI_PASSWORD,			// Field index which submit button should be adjacent to
+			LOIFI_OTP,			// Field index which submit button should be adjacent to
 			LOIFI_USERNAME,			// Username field index value
 			LOIFI_PASSWORD,			// Password field index value
+			LOIFI_OTP,				// OTP field index value
 			LUIFI_STATUS,			// Status field
 			{
 				//  when to display,               style,             field id,        type,               name           data source  value		callback
@@ -58,6 +60,7 @@ namespace pGina
 				{ { CPFS_DISPLAY_IN_BOTH,		   CPFIS_NONE },	{ LOIFI_USERNAME,  CPFT_LARGE_TEXT,    L"Username" }, SOURCE_NONE, NULL,		NULL },	
 				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_FOCUSED },	{ LOIFI_PASSWORD,  CPFT_PASSWORD_TEXT, L"Password" }, SOURCE_NONE, NULL,		NULL }, 
 				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },    { LOIFI_SUBMIT,    CPFT_SUBMIT_BUTTON, L"Submit" },   SOURCE_NONE, NULL,		NULL }, 
+				{ { CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_FOCUSED },	{ LOIFI_OTP,  CPFT_PASSWORD_TEXT, L"Otp" }, SOURCE_NONE, NULL,		NULL },
 				{ { CPFS_DISPLAY_IN_BOTH,		   CPFIS_NONE },    { LOIFI_STATUS,    CPFT_SMALL_TEXT,    L"Status" },   SOURCE_STATUS, L"Status",		NULL },
 			}
 		};
