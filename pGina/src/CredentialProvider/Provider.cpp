@@ -373,6 +373,7 @@ namespace pGina
 
 		IFACEMETHODIMP Provider::GetFieldDescriptorForUi(UI_FIELDS const& fields, DWORD index, CREDENTIAL_PROVIDER_FIELD_DESCRIPTOR **ppcpfd)
 		{
+			pDEBUG("Starting GetFieldDescriptor for UI");
 			// Must be in our count of fields, and we have to have somewhere to stuff the result
 			if(index >= fields.fieldCount && ppcpfd) return E_INVALIDARG;
 
@@ -392,12 +393,14 @@ namespace pGina
 			{
 				if(!SUCCEEDED(SHStrDupW(fields.fields[index].fieldDescriptor.pszLabel, &pcpfd->pszLabel)))
 				{
+					pDEBUG("Started GetFieldDescriptor for UI; but dup failed..");
 					// Dup failed, free up what we've got so far, then get out
 					CoTaskMemFree(pcpfd);
 					return E_OUTOFMEMORY;
 				}				
 			}
 
+			pDEBUG("Ending GetFieldDescriptor for UI successfully.");
 			// Got here? Then we win! 
 			*ppcpfd = pcpfd;
 			return S_OK;    

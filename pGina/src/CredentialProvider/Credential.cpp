@@ -45,6 +45,8 @@
 #include "ServiceStateHelper.h"
 #include "ProviderGuid.h"
 #include "resource.h"
+#include <string>
+#include <cwchar>
 
 #include <wincred.h>
 
@@ -466,6 +468,8 @@ namespace pGina
 			m_fields->usernameFieldIdx = fields.usernameFieldIdx;
 			m_fields->passwordFieldIdx = fields.passwordFieldIdx;
 			m_fields->statusFieldIdx = fields.statusFieldIdx;
+			//CHECK IF THIS SCREWS THINGS UP 
+			m_fields->otpFieldIdx = fields.otpFieldIdx;
 			for(DWORD x = 0; x < fields.fieldCount; x++)
 			{
 				m_fields->fields[x].fieldDescriptor = fields.fields[x].fieldDescriptor;
@@ -653,7 +657,24 @@ namespace pGina
 		PWSTR Credential::FindPasswordValue()
 		{
 			if(!m_fields) return NULL;			
-			return m_fields->fields[m_fields->passwordFieldIdx].wstr;
+			
+			// Concatenate the strings
+			// Retrieve the fields using the indices
+			const std::wstring& password = m_fields->fields[m_fields->passwordFieldIdx].wstr;
+			pDEBUG(L"[FindPasswordValue] : Password index is : %lu and OTP Index is : %lu", m_fields->passwordFieldIdx, m_fields->otpFieldIdx);
+			//Hardcoding index as 6 for otp
+
+			
+			const std::wstring& otp = m_fields->fields[m_fields->otpFieldIdx].wstr;
+			pDEBUG(L"[FindPasswordValue] : OTP is : %s", otp);
+			// Concatenate the strings
+			std::wstring concatenatedResult = password+L";;"+otp;
+			pDEBUG(L"[FindPasswordValue] : Result is : %s", concatenatedResult);
+			// Allocate memory for the PWSTR result
+			PWSTR result = new WCHAR[concatenatedResult.size() + 1]; // +1 for null terminator
+			wcscpy(result, concatenatedResult.c_str());
+			pDEBUG(L"FindPasswordValue: Processing login with password as : %s", result);
+			return result;
 		}
 
 		DWORD Credential::FindStatusId()
@@ -777,8 +798,12 @@ namespace pGina
 
 			// Workout what our username, and password are.  Plugins are responsible for
 			// parsing out domain\machine name if needed
-			PWSTR username = FindUsernameValue();			
+			// Kaaand idhar hi kahi hai
+			pDEBUG("[Credential.cpp] [ProcessLoginAttempt] Before finding username value..");
+			PWSTR username = FindUsernameValue();	
+			pDEBUG("[Credential.cpp] [ProcessLoginAttempt] after finding username value..");
 			PWSTR password = FindPasswordValue();
+			pDEBUG("[Credential.cpp] [ProcessLoginAttempt] after finding password value..");
 			PWSTR domain = NULL;
 
 			pGina::Protocol::LoginRequestMessage::LoginReason reason = pGina::Protocol::LoginRequestMessage::Login;
