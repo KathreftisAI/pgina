@@ -9,7 +9,7 @@
 !include MUI2.nsh
 
 !define APPNAME "pGina"
-!define VERSION "3.2.4.1"
+!define VERSION "3.2.4.2"
 
 RequestExecutionLevel admin  ; Require admin rights
 
@@ -84,13 +84,9 @@ Section "pGina" InstallpGina
   File "..\..\pGina\src\bin\*.config"
 
   ${If} ${AtLeastWin7}
-    SetOutPath $INSTDIR\Win32
-    File "..\..\pGina\src\bin\Win32\pGinaCredentialProvider.dll"
     SetOutPath $INSTDIR\x64
     File "..\..\pGina\src\bin\x64\pGinaCredentialProvider.dll"
   ${Else}
-    SetOutPath $INSTDIR\Win32
-    File "..\..\pGina\src\bin\Win32\pGinaGINA.dll"
     SetOutPath $INSTDIR\x64
     File "..\..\pGina\src\bin\x64\pGinaGINA.dll"
   ${EndIf}

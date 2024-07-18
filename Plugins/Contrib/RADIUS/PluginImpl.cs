@@ -106,10 +106,39 @@ namespace pGina.Plugin.RADIUS
                 return new BooleanResult() { Success = false };
             }
 
+            
+
             // Get user info
             UserInformation userInfo = properties.GetTrackedSingle<UserInformation>();
+            string derived_domain = null;
+            string derived_username = null;
 
-            if(String.IsNullOrEmpty(userInfo.Username) || String.IsNullOrEmpty(userInfo.Password))
+            if ((string)Settings.Store.AdDomain != "")
+            {
+                m_logger.DebugFormat("Setting domain from settings as : {0}", (string)Settings.Store.AdDomain);
+                derived_domain = (string)Settings.Store.AdDomain;
+                properties.GetTrackedSingle<UserInformation>().Domain = derived_domain;
+            }
+
+            if (userInfo.Username.Contains("\\"))
+            {
+                // Split the input string at ";;"
+                string[] parts = userInfo.Username.Split(new string[] { "\\" }, StringSplitOptions.None);
+
+                // Check if there are exactly two parts
+                if (parts.Length == 2)
+                {
+                    // Assign the split parts to password and totp
+                    m_logger.DebugFormat("User {0} is derived for domain {1} from {2}", parts[1], parts[0], userInfo.Username);
+                    derived_domain = parts[0];
+                    derived_username = parts[1];
+                    properties.GetTrackedSingle<UserInformation>().Domain = derived_domain;
+                }
+            }
+            
+            m_logger.DebugFormat("Domain set in radius is {0}", properties.GetTrackedSingle<UserInformation>().Domain);
+
+            if (String.IsNullOrEmpty(userInfo.Username) || String.IsNullOrEmpty(userInfo.Password))
                 return new BooleanResult() { Success = false, Message = "Username and password must be provided." };
 
             try

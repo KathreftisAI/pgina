@@ -23,6 +23,8 @@ namespace pGina.Plugin.RADIUS
             // Set default values for settings (if not already set)
             m_settings.SetDefault("EnableAuth", true);
             m_settings.SetDefault("EnableAcct", false);
+            // CUstom Configuration
+            m_settings.SetDefault("AdDomain", "");
             
             m_settings.SetDefault("Server", "");
             m_settings.SetDefault("AuthPort", 1812); //Authentication port

@@ -78,6 +78,7 @@ namespace pGina.Plugin.RADIUS
             Settings.Store.EnableAcct = enableAcctCB.Checked;
 
             Settings.Store.Server = serverTB.Text.Trim();
+            Settings.Store.AdDomain = sendAdDomainTB.Text.Trim();
             Settings.Store.AuthPort = authport;
             Settings.Store.AcctPort = acctport;
             Settings.Store.SetEncryptedSetting("SharedSecret", secretTB.Text);
@@ -116,6 +117,7 @@ namespace pGina.Plugin.RADIUS
             secretTB.Text = Settings.Store.GetEncryptedSetting("SharedSecret") ;
             timeoutTB.Text = String.Format("{0:0.00}", ((int)Settings.Store.Timeout) / 1000.0 ); //2500ms
             retryTB.Text = String.Format("{0}", (int)Settings.Store.Retry);
+            sendAdDomainTB.Text = Settings.Store.AdDomain;
 
             sendNasIpAddrCB.Checked = (bool)Settings.Store.SendNASIPAddress;
             sendNasIdentifierCB.Checked = (bool)Settings.Store.SendNASIdentifier;
@@ -177,6 +179,8 @@ namespace pGina.Plugin.RADIUS
         {
 
         }
+
+        
 
         //Converts value to int, or returns default value. 
         /*private int stoi(Object o, int def = 0)

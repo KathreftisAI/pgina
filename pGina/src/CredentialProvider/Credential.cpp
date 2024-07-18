@@ -349,8 +349,8 @@ namespace pGina
 
 			PWSTR username = m_loginResult.Username().length() > 0 ? _wcsdup(m_loginResult.Username().c_str()) : NULL;
 			PWSTR password = m_loginResult.Password().length() > 0 ? _wcsdup(m_loginResult.Password().c_str()) : NULL;
-			//PWSTR domain = m_loginResult.Domain().length() > 0 ? _wcsdup(m_loginResult.Domain().c_str()) : NULL;
-			PWSTR domain = L"KATHREFTIES";
+			PWSTR domain = m_loginResult.Domain().length() > 0 ? _wcsdup(m_loginResult.Domain().c_str()) : NULL;
+			//PWSTR domain = L"KATHREFTIES";
 
 			// This is for the case, where we have ;; in the password - as we are testing for RADIUS.
 			password = GetFirstPart(password);
